@@ -22,7 +22,7 @@ spec:
 
       - name: backend
 
-        image: backend:latest
+        image: 622488711452.dkr.ecr.us-west-1.amazonaws.com/task5-backend:416529f1423136cb703789c1ff3fbfa5056cad2d
 
         imagePullPolicy: Always
 
