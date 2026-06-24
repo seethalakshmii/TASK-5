@@ -1,8 +1,10 @@
 body {
-    font-family: Arial, sans-serif;
-    padding: 40px;
+    font-family: Arial;
+    padding: 30px;
 }
 
-.container {
-    max-width: 800px;
+input, textarea {
+    width: 300px;
+    padding: 8px;
+    margin: 5px 0;
 }

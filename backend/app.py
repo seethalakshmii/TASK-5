@@ -1,76 +1,48 @@
-from flask import Flask, jsonify
+from flask import Flask, request, jsonify
 from database import get_connection
-from prometheus_client import Counter, generate_latest
-from prometheus_client import CONTENT_TYPE_LATEST
 
 app = Flask(__name__)
 
-REQUEST_COUNT = Counter(
-    "http_requests_total",
-    "Total HTTP Requests"
-)
-
-
 @app.route("/")
 def home():
-
-    REQUEST_COUNT.inc()
-
-    return jsonify({
-        "message": "Cloud Native DevOps Project"
-    })
-
+    return jsonify({"message": "Cloud Native DevOps Project"})
 
 @app.route("/health")
 def health():
+    return jsonify({"status": "healthy"})
 
-    REQUEST_COUNT.inc()
+# INSERT DATA TO RDS
+@app.route("/submit", methods=["POST"])
+def submit():
+    data = request.json
 
-    return jsonify({
-        "status": "healthy"
-    })
+    conn = get_connection()
+    cursor = conn.cursor()
 
+    cursor.execute(
+        "INSERT INTO users (name, email, message) VALUES (%s, %s, %s)",
+        (data["name"], data["email"], data["message"])
+    )
 
-@app.route("/db-check")
-def db_check():
+    conn.commit()
+    cursor.close()
+    conn.close()
 
-    REQUEST_COUNT.inc()
+    return jsonify({"message": "Saved to RDS"})
 
-    try:
+# GET DATA (VERIFY)
+@app.route("/users")
+def users():
+    conn = get_connection()
+    cursor = conn.cursor()
 
-        conn = get_connection()
+    cursor.execute("SELECT * FROM users")
+    result = cursor.fetchall()
 
-        cursor = conn.cursor()
+    cursor.close()
+    conn.close()
 
-        cursor.execute("SELECT VERSION()")
-
-        version = cursor.fetchone()
-
-        cursor.close()
-        conn.close()
-
-        return jsonify({
-            "database": "connected",
-            "version": version[0]
-        })
-
-    except Exception as e:
-
-        return jsonify({
-            "database": "failed",
-            "error": str(e)
-        }), 500
-
-
-@app.route("/metrics")
-def metrics():
-    return generate_latest(), 200, {
-        "Content-Type": CONTENT_TYPE_LATEST
-    }
-
+    return jsonify(result)
 
 if __name__ == "__main__":
-    app.run(
-        host="0.0.0.0",
-        port=5000
-    )
+    app.run(host="0.0.0.0", port=5000)
