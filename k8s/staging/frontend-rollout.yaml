@@ -22,7 +22,7 @@ spec:
 
       - name: frontend
 
-        image: 622488711452.dkr.ecr.us-west-1.amazonaws.com/task5-frontend:a4c4d1600ca2a7516c2705168075c5fa2cac2400
+        image: 622488711452.dkr.ecr.us-west-1.amazonaws.com/task5-frontend:b18d388a9cad41102b3d5f0a76b2ab52bd2a0c2d
 
         imagePullPolicy: Always
 
