@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'backend/**'
+      - 'k8s/**'
+      - '.github/workflows/**'
 
 permissions:
   id-token: write
@@ -41,38 +45,38 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # AWS Authentication (OIDC)
+      # AWS AUTH (OIDC)
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: us-west-1
 
-      # Login to ECR
+      # LOGIN ECR
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      # Build Docker Image (FIXED NAME)
+      # BUILD IMAGE (correct repo name)
       - name: Build Docker Image
         run: |
           docker build \
             -t task5-backend:${{ github.sha }} \
             ./backend
 
-      # Tag Image for ECR (FIXED REPO NAME)
+      # TAG IMAGE (correct ECR repo)
       - name: Tag Docker Image
         run: |
           docker tag task5-backend:${{ github.sha }} \
             ${{ steps.login-ecr.outputs.registry }}/task5-backend:${{ github.sha }}
 
-      # Push Image to ECR (FIXED)
+      # PUSH IMAGE
       - name: Push Docker Image
         run: |
           docker push \
             ${{ steps.login-ecr.outputs.registry }}/task5-backend:${{ github.sha }}
 
-      # Update Kubernetes manifest (ArgoCD GitOps)
+      # UPDATE K8S MANIFEST (ArgoCD)
       - name: Update Staging Rollout Manifest
         run: |
           IMAGE=${{ steps.login-ecr.outputs.registry }}/task5-backend:${{ github.sha }}
@@ -81,7 +85,7 @@ jobs:
             "s|image: .*|image: ${IMAGE}|g" \
             k8s/staging/backend-rollout.yaml
 
-      # Commit and push manifest update
+      # SAFE GIT PUSH FIX (IMPORTANT FIX)
       - name: Commit Manifest Changes
         run: |
           git config user.name "github-actions"
@@ -91,4 +95,6 @@ jobs:
 
           git commit -m "Update backend image to ${{ github.sha }}" || exit 0
 
-          git push
+          git pull --rebase origin main || true
+
+          git push origin main
