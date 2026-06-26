@@ -43,7 +43,7 @@ def record_metric(method, endpoint, status):
 @app.route("/")
 def home():
     record_metric("GET", "/", "200")
-    return jsonify({"message": "Cloud Native DevOps Project.."})
+    return jsonify({"message": "Cloud Native DevOps Project..Version 2"})
 
 
 @app.route("/health")
