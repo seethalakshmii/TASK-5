@@ -49,28 +49,32 @@ document.getElementById("form").addEventListener("submit", async (e) => {
 
 async function uploadFile() {
 
-    const file =
-        document.getElementById("fileInput").files[0];
+    const fileInput =
+        document.getElementById("fileInput");
 
-    if (!file) {
+    if (fileInput.files.length === 0) {
 
-        alert("Select a file");
+        alert("Please choose a file");
 
         return;
     }
 
     const formData = new FormData();
 
-    formData.append("file", file);
+    formData.append(
+        "file",
+        fileInput.files[0]
+    );
 
-    const res = await fetch("/api/upload", {
+    const response = await fetch(
+        "/api/upload",
+        {
+            method: "POST",
+            body: formData
+        }
+    );
 
-        method: "POST",
-
-        body: formData
-    });
-
-    const result = await res.json();
+    const result = await response.json();
 
     document.getElementById("uploadStatus").innerText =
         result.message || result.error;

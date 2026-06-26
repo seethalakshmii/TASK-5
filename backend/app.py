@@ -87,28 +87,13 @@ def upload():
 
         bucket = os.getenv("S3_BUCKET")
 
-        if not bucket:
-            return jsonify(
-                {
-                    "error": "S3_BUCKET environment variable is not configured"
-                }
-            ), 500
-
         if "file" not in request.files:
-            return jsonify(
-                {
-                    "error": "No file uploaded"
-                }
-            ), 400
+            return jsonify({"error": "No file uploaded"}), 400
 
         file = request.files["file"]
 
         if file.filename == "":
-            return jsonify(
-                {
-                    "error": "No file selected"
-                }
-            ), 400
+            return jsonify({"error": "No file selected"}), 400
 
         filename = secure_filename(file.filename)
 
@@ -118,21 +103,14 @@ def upload():
             filename
         )
 
-        return jsonify(
-            {
-                "message": "File uploaded successfully",
-                "bucket": bucket,
-                "file": filename
-            }
-        )
+        return jsonify({
+            "message": "Uploaded successfully!",
+            "file": filename
+        })
 
     except Exception as e:
-        return jsonify(
-            {
-                "error": str(e)
-            }
-        ), 500
-
-
+        return jsonify({"error": str(e)}), 500
+    
+    
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
