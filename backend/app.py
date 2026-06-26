@@ -1,7 +1,11 @@
 from flask import Flask, request, jsonify
 from database import get_connection
+import os
+import boto3
 
 app = Flask(__name__)
+
+ses = boto3.client("ses", region_name="us-west-1")
 
 @app.route("/")
 def home():
@@ -11,7 +15,8 @@ def home():
 def health():
     return jsonify({"status": "healthy"})
 
-# INSERT DATA TO RDS
+
+# INSERT + EMAIL
 @app.route("/submit", methods=["POST"])
 def submit():
     data = request.json
@@ -28,9 +33,33 @@ def submit():
     cursor.close()
     conn.close()
 
-    return jsonify({"message": "Saved to RDS"})
+    sender_email = os.environ["SENDER_EMAIL"]
+    receiver_email = os.environ["RECEIVER_EMAIL"]
 
-# GET DATA (VERIFY)
+    subject = "New Form Submission"
+
+    body = f"""
+New user submission received:
+
+Name: {data['name']}
+Email: {data['email']}
+Message: {data['message']}
+"""
+
+    ses.send_email(
+        Source=sender_email,
+        Destination={
+            "ToAddresses": [receiver_email]
+        },
+        Message={
+            "Subject": {"Data": subject},
+            "Body": {"Text": {"Data": body}}
+        }
+    )
+
+    return jsonify({"message": "Saved to RDS + Email sent"})
+
+
 @app.route("/users")
 def users():
     conn = get_connection()
@@ -44,6 +73,6 @@ def users():
 
     return jsonify(result)
 
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
-# workflow test
