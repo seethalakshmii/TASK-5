@@ -1,12 +1,16 @@
 async function load() {
 
-    const health = await fetch("/health");
+    const health = await fetch("/api/health");
     const healthData = await health.json();
-    document.getElementById("health").innerText = healthData.status;
 
-    const home = await fetch("/");
+    document.getElementById("health").innerText =
+        healthData.status;
+
+    const home = await fetch("/api/");
     const homeData = await home.json();
-    document.getElementById("msg").innerText = homeData.message;
+
+    document.getElementById("msg").innerText =
+        homeData.message;
 }
 
 load();
@@ -16,13 +20,16 @@ document.getElementById("form").addEventListener("submit", async (e) => {
 
     e.preventDefault();
 
-    const data = {
+    const body = {
+
         name: document.getElementById("name").value,
+
         email: document.getElementById("email").value,
+
         message: document.getElementById("message").value
     };
 
-    const res = await fetch("/submit", {
+    const res = await fetch("/api/submit", {
 
         method: "POST",
 
@@ -30,8 +37,7 @@ document.getElementById("form").addEventListener("submit", async (e) => {
             "Content-Type": "application/json"
         },
 
-        body: JSON.stringify(data)
-
+        body: JSON.stringify(body)
     });
 
     const result = await res.json();
@@ -43,10 +49,13 @@ document.getElementById("form").addEventListener("submit", async (e) => {
 
 async function uploadFile() {
 
-    const file = document.getElementById("fileInput").files[0];
+    const file =
+        document.getElementById("fileInput").files[0];
 
     if (!file) {
-        alert("Choose a file first");
+
+        alert("Select a file");
+
         return;
     }
 
@@ -54,12 +63,11 @@ async function uploadFile() {
 
     formData.append("file", file);
 
-    const res = await fetch("/upload", {
+    const res = await fetch("/api/upload", {
 
         method: "POST",
 
         body: formData
-
     });
 
     const result = await res.json();
