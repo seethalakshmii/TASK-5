@@ -48,7 +48,8 @@ async function load() {
     }
 }
 
-async function uploadFile() {
+/* ✅ FIX IS HERE (IMPORTANT) */
+window.uploadFile = async function () {
     try {
         const fileInput = document.getElementById("fileInput");
 
@@ -74,4 +75,4 @@ async function uploadFile() {
         console.error(err);
         document.getElementById("uploadStatus").innerText = "Upload failed";
     }
-}
+};
