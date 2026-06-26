@@ -1,78 +1,84 @@
 from flask import Flask, request, jsonify
 from database import get_connection
-import os
-import boto3
 
 app = Flask(__name__)
 
-ses = boto3.client("ses", region_name="us-west-1")
-
+# -------------------------
+# HEALTH CHECK
+# -------------------------
 @app.route("/")
 def home():
-    return jsonify({"message": "Cloud Native DevOps Project"})
+    return jsonify({"message": "Cloud Native DevOps Project"}), 200
+
 
 @app.route("/health")
 def health():
-    return jsonify({"status": "healthy"})
+    return jsonify({"status": "healthy"}), 200
 
 
-# INSERT + EMAIL
+# -------------------------
+# INSERT DATA TO RDS
+# -------------------------
 @app.route("/submit", methods=["POST"])
 def submit():
-    data = request.json
+    try:
+        data = request.json
 
-    conn = get_connection()
-    cursor = conn.cursor()
+        # Validate input
+        if not data:
+            return jsonify({"error": "No input data provided"}), 400
 
-    cursor.execute(
-        "INSERT INTO users (name, email, message) VALUES (%s, %s, %s)",
-        (data["name"], data["email"], data["message"])
-    )
+        name = data.get("name")
+        email = data.get("email")
+        message = data.get("message")
 
-    conn.commit()
-    cursor.close()
-    conn.close()
+        if not name or not email or not message:
+            return jsonify({"error": "Missing required fields"}), 400
 
-    sender_email = os.environ["SENDER_EMAIL"]
-    receiver_email = os.environ["RECEIVER_EMAIL"]
+        # DB connection
+        conn = get_connection()
+        cursor = conn.cursor()
 
-    subject = "New Form Submission"
+        # Insert query
+        cursor.execute(
+            "INSERT INTO users (name, email, message) VALUES (%s, %s, %s)",
+            (name, email, message)
+        )
 
-    body = f"""
-New user submission received:
+        conn.commit()
+        cursor.close()
+        conn.close()
 
-Name: {data['name']}
-Email: {data['email']}
-Message: {data['message']}
-"""
+        return jsonify({"message": "Saved to RDS successfully"}), 200
 
-    ses.send_email(
-        Source=sender_email,
-        Destination={
-            "ToAddresses": [receiver_email]
-        },
-        Message={
-            "Subject": {"Data": subject},
-            "Body": {"Text": {"Data": body}}
-        }
-    )
-
-    return jsonify({"message": "Saved to RDS + Email sent"})
+    except Exception as e:
+        # IMPORTANT: return real error for debugging
+        return jsonify({"error": str(e)}), 500
 
 
-@app.route("/users")
+# -------------------------
+# FETCH USERS (DEBUG)
+# -------------------------
+@app.route("/users", methods=["GET"])
 def users():
-    conn = get_connection()
-    cursor = conn.cursor()
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM users")
-    result = cursor.fetchall()
+        cursor.execute("SELECT * FROM users")
+        result = cursor.fetchall()
 
-    cursor.close()
-    conn.close()
+        cursor.close()
+        conn.close()
 
-    return jsonify(result)
+        return jsonify(result), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
+# -------------------------
+# RUN APP
+# -------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
