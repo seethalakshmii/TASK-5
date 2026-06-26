@@ -53,18 +53,25 @@ jobs:
         run: |
           docker build \
             -t task5-backend:${{ github.sha }} \
+            -t task5-backend:latest \
             ./backend
 
-      - name: Tag Image
+      - name: Tag Images
         run: |
           docker tag task5-backend:${{ github.sha }} \
-          ${{ steps.login-ecr.outputs.registry }}/task5-backend:${{ github.sha }}
+            ${{ steps.login-ecr.outputs.registry }}/task5-backend:${{ github.sha }}
 
-      - name: Push Image
+          docker tag task5-backend:latest \
+            ${{ steps.login-ecr.outputs.registry }}/task5-backend:latest
+
+      - name: Push Images
         run: |
           docker push \
-          ${{ steps.login-ecr.outputs.registry }}/task5-backend:${{ github.sha }}
+            ${{ steps.login-ecr.outputs.registry }}/task5-backend:${{ github.sha }}
 
+          docker push \
+            ${{ steps.login-ecr.outputs.registry }}/task5-backend:latest
+            
       - name: Update Staging Manifest
         run: |
           IMAGE=${{ steps.login-ecr.outputs.registry }}/task5-backend:${{ github.sha }}
