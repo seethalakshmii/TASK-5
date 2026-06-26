@@ -14,7 +14,7 @@
 
 <hr>
 
-<h3>Submit Data</h3>
+<h3>Submit Data (RDS)</h3>
 
 <form id="form">
     <input id="name" placeholder="Name" required><br><br>
@@ -24,16 +24,16 @@
     <button type="submit">Send</button>
 </form>
 
+<p id="response"></p>
+
 <hr>
 
-<h3>Upload File (Triggers S3 → Lambda)</h3>
+<h3>Upload File → S3 → Lambda → SES Email</h3>
 
 <input type="file" id="fileInput" />
 <button onclick="uploadFile()">Upload to S3</button>
 
 <p id="uploadStatus"></p>
-
-<p id="response"></p>
 
 <script src="script.js"></script>
 

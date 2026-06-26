@@ -1,17 +1,19 @@
 from flask import Flask, request, jsonify
 from database import get_connection
+import boto3
+import os
 
 app = Flask(__name__)
 
 # -------------------------
 # HEALTH CHECK
 # -------------------------
-@app.route("/")
+@app.route("/api/")
 def home():
     return jsonify({"message": "Cloud Native DevOps Project"}), 200
 
 
-@app.route("/health")
+@app.route("/api/health")
 def health():
     return jsonify({"status": "healthy"}), 200
 
@@ -19,27 +21,21 @@ def health():
 # -------------------------
 # INSERT DATA TO RDS
 # -------------------------
-@app.route("/submit", methods=["POST"])
+@app.route("/api/submit", methods=["POST"])
 def submit():
     try:
         data = request.json
 
-        # Validate input
         if not data:
-            return jsonify({"error": "No input data provided"}), 400
+            return jsonify({"error": "No input data"}), 400
 
         name = data.get("name")
         email = data.get("email")
         message = data.get("message")
 
-        if not name or not email or not message:
-            return jsonify({"error": "Missing required fields"}), 400
-
-        # DB connection
         conn = get_connection()
         cursor = conn.cursor()
 
-        # Insert query
         cursor.execute(
             "INSERT INTO users (name, email, message) VALUES (%s, %s, %s)",
             (name, email, message)
@@ -49,17 +45,16 @@ def submit():
         cursor.close()
         conn.close()
 
-        return jsonify({"message": "Saved to RDS successfully"}), 200
+        return jsonify({"message": "Saved to RDS"}), 200
 
     except Exception as e:
-        # IMPORTANT: return real error for debugging
         return jsonify({"error": str(e)}), 500
 
 
 # -------------------------
-# FETCH USERS (DEBUG)
+# GET USERS (VERIFY DB)
 # -------------------------
-@app.route("/users", methods=["GET"])
+@app.route("/api/users", methods=["GET"])
 def users():
     try:
         conn = get_connection()
@@ -71,14 +66,33 @@ def users():
         cursor.close()
         conn.close()
 
-        return jsonify(result), 200
+        return jsonify({
+            "count": len(result),
+            "data": result
+        }), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
 # -------------------------
-# RUN APP
+# S3 UPLOAD TRIGGER (OPTIONAL API)
 # -------------------------
+@app.route("/api/upload", methods=["POST"])
+def upload():
+    try:
+        s3 = boto3.client("s3")
+        bucket = os.getenv("BUCKET_NAME")
+
+        file = request.files["file"]
+
+        s3.upload_fileobj(file, bucket, file.filename)
+
+        return jsonify({"message": "Uploaded to S3"}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)

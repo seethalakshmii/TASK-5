@@ -8,3 +8,8 @@ input, textarea {
     padding: 8px;
     margin: 5px 0;
 }
+
+button {
+    padding: 8px 12px;
+    cursor: pointer;
+}
