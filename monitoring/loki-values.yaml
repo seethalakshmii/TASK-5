@@ -39,7 +39,7 @@ backend:
 gateway:
   enabled: true
 
-# ✅ IMPORTANT FIX (your current error)
+
 chunksCache:
   enabled: false
 

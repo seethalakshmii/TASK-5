@@ -1,6 +1,5 @@
-# ----------------------------
 # DB SUBNET GROUP (PRIVATE SUBNETS)
-# ----------------------------
+
 resource "aws_db_subnet_group" "mysql" {
   name       = "${var.project_name}-mysql-subnet"
   subnet_ids = module.vpc.private_subnets
@@ -10,9 +9,8 @@ resource "aws_db_subnet_group" "mysql" {
   }
 }
 
-# ----------------------------
 # RDS SECURITY GROUP
-# ----------------------------
+
 resource "aws_security_group" "rds" {
   name   = "${var.project_name}-rds-sg"
   vpc_id = module.vpc.vpc_id
@@ -22,9 +20,8 @@ resource "aws_security_group" "rds" {
   }
 }
 
-# ----------------------------
 # INGRESS RULE (ALLOW EKS VPC ACCESS)
-# ----------------------------
+
 resource "aws_vpc_security_group_ingress_rule" "mysql" {
 
   security_group_id = aws_security_group.rds.id
@@ -37,9 +34,8 @@ resource "aws_vpc_security_group_ingress_rule" "mysql" {
   cidr_ipv4 = module.vpc.vpc_cidr_block
 }
 
-# ----------------------------
-# RDS MYSQL INSTANCE
-# ----------------------------
+# RDS MYSQL CREATION
+
 resource "aws_db_instance" "mysql" {
 
   identifier = "${var.project_name}-mysql"
@@ -60,7 +56,8 @@ resource "aws_db_instance" "mysql" {
 
   skip_final_snapshot = true
 
-  # IMPORTANT: PRIVATE DATABASE (BEST PRACTICE)
+  # PRIVATE DATABASE 
+
   publicly_accessible = false
 
   tags = {

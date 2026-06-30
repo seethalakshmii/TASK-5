@@ -1,6 +1,4 @@
-# =====================================================
-# IAM POLICY FOR EXTERNAL SECRETS
-# =====================================================
+# Allow External Secrets Operator to read AWS Secrets Manager.
 
 resource "aws_iam_policy" "external_secrets" {
 
@@ -25,9 +23,8 @@ resource "aws_iam_policy" "external_secrets" {
   })
 }
 
-# =====================================================
+
 # TRUST POLICY (IRSA)
-# =====================================================
 
 data "aws_iam_policy_document" "external_secrets_assume_role" {
 
@@ -60,9 +57,8 @@ data "aws_iam_policy_document" "external_secrets_assume_role" {
   }
 }
 
-# =====================================================
+
 # IAM ROLE
-# =====================================================
 
 resource "aws_iam_role" "external_secrets" {
 
@@ -71,9 +67,8 @@ resource "aws_iam_role" "external_secrets" {
   assume_role_policy = data.aws_iam_policy_document.external_secrets_assume_role.json
 }
 
-# =====================================================
+
 # ATTACH POLICY TO ROLE
-# =====================================================
 
 resource "aws_iam_role_policy_attachment" "external_secrets" {
 

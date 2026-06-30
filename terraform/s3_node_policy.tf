@@ -1,3 +1,5 @@
+#Allow EKS worker nodes to upload files into S3
+
 resource "aws_iam_policy" "eks_s3_upload_policy" {
   name        = "eks-s3-upload-policy"
   description = "Allow EKS nodes to upload files to S3"

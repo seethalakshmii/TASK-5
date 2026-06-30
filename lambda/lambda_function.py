@@ -2,7 +2,7 @@ import json
 import boto3
 import os
 
-# IMPORTANT: always set region explicitly
+# always set region explicitly
 ses = boto3.client("ses", region_name="us-west-1")
 
 
